@@ -10,6 +10,7 @@ public:
 	Hash_block() noexcept;
 	Hash_block(uint64_t) noexcept;
 	Hash_block(const Block*) noexcept;
+	Hash_block(const std::string*) noexcept;
 	Block& operator[](short) noexcept;
 	const Block& operator[](short) const noexcept;
 	Hash_block operator^(const Hash_block&) const noexcept;
@@ -30,8 +31,9 @@ namespace gost
 	{
 
 	public:
-		Context(uint64_t = 0);
-		void update(uint64_t);
+		Context(uint64_t = 0) noexcept;
+		uint64_t update(uint64_t);
+		inline uint64_t mix(uint64_t);
 
 	private:
 		uint64_t hash_val = 0;
@@ -39,7 +41,10 @@ namespace gost
 		uint64_t keys[4] = { 0 };
 
 		void keygen(uint64_t);
-		void encrypt(uint64_t);
+		uint64_t encrypt();
 
 	};
+
+	uint64_t compress(uint64_t h, uint64_t m) noexcept;
+
 }

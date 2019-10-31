@@ -1,6 +1,7 @@
 #include "block.h"
 #include "magma.h"
 #include "gost_r3411_94.h"
+#include "cryptanalysis.h"
 
 int main()
 {
@@ -17,6 +18,13 @@ int main()
 	Block plain_text = magma::decrypt(cipher_text, (const uint8_t*)key);
 	std::cout << cipher_text << std::endl;
 	std::cout << plain_text << std::endl;
+
+	std::string msg[] = {"0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0", "0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0"};
+	Hash_block msg_block(msg);
+	std::cout << (Hash_block)gost::compress(msg_block, 4) << std::endl;
+
+	attack::Context ctx(0);
+	std::cout << ctx.inv_permutation(permutation(115)) << std::endl;
 
 	//std::cout << hash_block << std::endl;
 	//std::cout << permutation(hash_block) << std::endl;

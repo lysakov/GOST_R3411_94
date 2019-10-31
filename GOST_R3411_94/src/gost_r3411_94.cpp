@@ -7,6 +7,7 @@ static uint64_t mapping_a(Hash_block y)
 	res[1] = y[0];
 	res[2] = y[1];
 	res[3] = y[2];
+
 	return res;
 }
 
@@ -24,6 +25,7 @@ uint64_t permutation(const Hash_block& block)
 		short new_ind = 32 - mapping_phi(32 - i);
 		res[new_ind / 8][new_ind % 8] = block[i / 8][i % 8];
 	}
+
 	return res;
 }
 
@@ -46,6 +48,14 @@ Hash_block::Hash_block(const Block *block) noexcept
 	}
 }
 
+Hash_block::Hash_block(const std::string *str) noexcept
+{
+	block[0] = Block(str[0]);
+	block[1] = Block(str[1]);
+	block[2] = Block(str[2]);
+	block[3] = Block(str[3]);
+}
+
 Block& Hash_block::operator[](short i) noexcept
 {
 	return block[i];
@@ -62,6 +72,7 @@ Hash_block Hash_block::operator^(const Hash_block &block) const noexcept
 	for (int i = 0; i < 4; ++i) {
 		res[i] = this->block[i] ^ block[i];
 	}
+
 	return res;
 }
 
@@ -75,24 +86,40 @@ std::ostream& operator<<(std::ostream &str, const Hash_block &block)
 	for (int i = 0; i < 4; ++i) {
 		str << block[i] << ' ';
 	}
+
 	return str;
 }
 
-gost::Context::Context(uint64_t iv) : hash_val(iv)
+gost::Context::Context(uint64_t iv) noexcept : hash_val(iv)
 {
 }
 
-void gost::Context::update(uint64_t)
+uint64_t gost::Context::update(uint64_t m)
 {
+	keygen(m);
+
+	uint64_t s = encrypt();
+	for (int i = 0; i < 12; ++i) {
+		s = mix(s);
+	}
+
+	uint64_t res = hash_val ^ mix(m ^ s);
+
+	for (int i = 0; i < 61; ++i) {
+		res = mix(res);
+	}
+
+	return res;
 }
 
 void gost::Context::keygen(uint64_t m)
 {
-	uint64_t consts[3];
+	uint64_t consts[3] = { 0 };
 	consts[1] = 0xFF00FFFF000000FF;
 	uint64_t u = hash_val;
 	uint64_t v = m;
 	uint64_t w = u ^ v;
+
 	keys[0] = permutation(w);
 	for (int i = 0; i < 3; ++i) {
 		u = (uint64_t)mapping_a(u) ^ consts[i];
@@ -102,10 +129,34 @@ void gost::Context::keygen(uint64_t m)
 	}
 }
 
-void gost::Context::encrypt(uint64_t m)
+uint64_t gost::Context::encrypt()
 {
-	s[0] = magma::encrypt(m & 0xFFFF, keys[0]);
-	s[1] = magma::encrypt((m >> 16) & 0xFFFF, keys[1]);
-	s[2] = magma::encrypt((m >> 32) & 0xFFFF, keys[2]);
-	s[3] = magma::encrypt((m >> 48) & 0xFFFF, keys[3]);
+	s[0] = magma::encrypt(hash_val & 0xFFFF, keys[0]);
+	s[1] = magma::encrypt((hash_val >> 16) & 0xFFFF, keys[1]);
+	s[2] = magma::encrypt((hash_val >> 32) & 0xFFFF, keys[2]);
+	s[3] = magma::encrypt((hash_val >> 48) & 0xFFFF, keys[3]);
+
+	return (uint64_t)s[0] ^ ((uint64_t)s[1] << 16) ^ ((uint64_t)s[2] << 32) ^ ((uint64_t)s[3] << 48);
+}
+
+inline uint64_t gost::Context::mix(uint64_t y)
+{
+	uint64_t mask = 0xF;
+	uint64_t res = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		uint64_t tmp = (y >> 4 * i) & mask;
+		res ^= tmp;
+	}
+
+	res ^= (y >> 48) & mask;
+	res ^= (y >> 60) & mask;
+
+	return (y >> 4) ^ (res << 60);
+}
+
+uint64_t gost::compress(uint64_t h, uint64_t m) noexcept
+{
+	gost::Context ctx(h);
+	return ctx.update(m);
 }
