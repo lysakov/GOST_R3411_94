@@ -36,13 +36,13 @@ uint16_t magma::Context::decrypt(uint16_t cipher_text) const noexcept
 static uint8_t substitution(const uint8_t part) noexcept
 {
 	short subst[] = { 1, 3, 0, 2 };
-	Block block = (uint16_t)part << 8;
+	Block block = static_cast<uint16_t>(part) << 8;
 
 	for (int i = 0; i < 4; ++i) {
 		block[i] = subst[block[i]];
 	}
 
-	return (uint8_t)((uint16_t)block >> 8);
+	return static_cast<uint8_t>(static_cast<uint16_t>(block) >> 8);
 }
 
 static uint8_t addition(uint8_t part, const uint8_t key) noexcept
@@ -66,7 +66,7 @@ std::pair<uint8_t, uint8_t>& magma::round(std::pair<uint8_t, uint8_t> &pair, con
 uint16_t magma::connect(std::pair<uint8_t, uint8_t> &pair) noexcept
 {
 	uint16_t res = pair.first;
-	res = res ^ ((uint16_t)pair.second << 8);
+	res = res ^ (static_cast<uint16_t>(pair.second) << 8);
 
 	return res;
 }
@@ -87,8 +87,8 @@ void magma::Context::keygen(const uint8_t *key) noexcept
 std::pair<uint8_t, uint8_t> magma::split(const uint16_t block) noexcept
 {
 	std::pair<uint8_t, uint8_t> pair;
-	pair.first = (uint8_t)(block >> 8);
-	pair.second = (uint8_t)(block & 0xFF);
+	pair.first = static_cast<uint8_t>(block >> 8);
+	pair.second = static_cast<uint8_t>(block & 0xFF);
 
 	return pair;
 }
@@ -109,10 +109,10 @@ uint16_t magma::decrypt(uint16_t cipher_text, const uint8_t *key)
 
 uint16_t magma::encrypt(uint16_t m, uint64_t key)
 {
-	return magma::encrypt(m, (uint8_t*)(&key));
+	return magma::encrypt(m, reinterpret_cast<const uint8_t*>(&key));
 }
 
 uint16_t magma::decrypt(uint16_t m, uint64_t key)
 {
-	return magma::decrypt(m, (uint8_t*)(&key));
+	return magma::decrypt(m, reinterpret_cast<const uint8_t*>(&key));
 }

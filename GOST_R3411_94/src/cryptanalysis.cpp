@@ -19,10 +19,10 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 	h0.first = (hashVal & 0xFF00) >> 8;
 	h0.second = hashVal & 0xFF;
 	uint64_t size = 0;
-	std::cout << keys.max_size() << '\n';
 	LinearTransformation A;
 
 	#pragma loop(hint_parallel(0))
+
 	for (uint32_t i = 0; i < UINT32_MAX; ++i) {
 
 		if (A.compute1(i) == d1) {
@@ -62,7 +62,7 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 				magma::round(plainText, (i >> 8 * j) & 0xFF);
 			}
 
-			uint16_t res = ((uint16_t)plainText.first << 8) ^ plainText.second;
+			uint16_t res = (static_cast<uint16_t>(plainText.first) << 8) ^ plainText.second;
 
 			auto iter = keys.find(res);
 
@@ -71,8 +71,8 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 				continue;
 			}
 
-			uint64_t key = ((uint64_t)iter->second << 32) ^ i;
-			std::cout << key << std::endl;
+			uint64_t key = (static_cast<uint64_t>(iter->second) << 32) ^ i;
+			//std::cout << key << std::endl;
 			uint64_t m = A.invPermutation(key) ^ hashVal;
 			uint64_t newHashVal = gost::compress(hashVal, m);
 
@@ -102,8 +102,8 @@ uint64_t attack::LinearTransformation::invPermutation(const Hash_block &y) noexc
 	Hash_block res;
 
 	for (int i = 0; i < 32; ++i) {
-		short new_ind = 32 - invPhi_(32 - i);
-		res[new_ind / 8][new_ind % 8] = y[i / 8][i % 8];
+		short newInd = 32 - invPhi_(32 - i);
+		res[i / 8][i % 8] = y[newInd / 8][newInd % 8];
 	}
 
 	return res;
@@ -111,17 +111,17 @@ uint64_t attack::LinearTransformation::invPermutation(const Hash_block &y) noexc
 
 inline uint64_t attack::LinearTransformation::invPsi_(uint64_t y) noexcept
 {
-	uint64_t last_block = y >> 60;
+	uint64_t lastBlock = y >> 60;
 	uint64_t mask = 0xF;
 
 	for (int i = 0; i < 3; ++i) {
-		last_block ^= (y >> 4 * i) & mask;
+		lastBlock ^= (y >> 4 * i) & mask;
 	}
 
-	last_block ^= (y >> 44) & mask;
-	last_block ^= (y >> 56) & mask;
+	lastBlock ^= (y >> 44) & mask;
+	lastBlock ^= (y >> 56) & mask;
 
-	return (y << 4) ^ last_block;
+	return (y << 4) ^ lastBlock;
 }
 
 uint16_t attack::LinearTransformation::operatorA_(uint64_t key) noexcept
@@ -141,7 +141,7 @@ uint16_t attack::LinearTransformation::operatorA_(uint64_t key) noexcept
 attack::LinearTransformation::LinearTransformation() noexcept
 {
 	for (int i = 0; i < 64; ++i) {
-		vector[i] = operatorA_((uint64_t)1 << (63 - i));
+		vector[i] = operatorA_(static_cast<uint64_t>(1) << (63 - i));
 	}
 }
 
@@ -150,7 +150,7 @@ uint16_t attack::LinearTransformation::compute1(uint32_t key) const noexcept
 	uint16_t res = 0;
 
 	for (int i = 0; i < 32; ++i) {
-		if (key & ((uint32_t)1 << (31 - i))) {
+		if (key & (static_cast<uint32_t>(1) << (31 - i))) {
 			res ^= vector[i];
 		}
 	}
@@ -163,7 +163,7 @@ uint16_t attack::LinearTransformation::compute2(uint32_t key) const noexcept
 	uint16_t res = 0;
 
 	for (int i = 0; i < 32; ++i) {
-		if (key & ((uint32_t)1 << (31 - i))) {
+		if (key & (static_cast<uint32_t>(1) << (31 - i))) {
 			res ^= vector[32 + i];
 		}
 	}

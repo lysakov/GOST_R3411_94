@@ -25,17 +25,19 @@ int main()
 	//std::string msg[] = {"0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0", "0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0"};
 	//Hash_block msg_block(msg);
 
-	std::cout << std::hex << std::endl;
+	//std::cout << std::hex << std::endl;
 
 	uint64_t h = 0x1a2b3c4d5e6f7788;
 	uint64_t m = 0x1212121234343434;
-	std::cout << gost::compress(h, m) << std::endl;
+	std::cout << std::hex << gost::compress(h, m) << std::dec << std::endl;
 
 	attack::Context ctx(0);
 
 	gost::Context gostCtx(0);
-	gostCtx.test();
-	//std::cout << ctx.inv_permutation(permutation(115)) << std::endl;
+	//gostCtx.test();
+
+	//attack::LinearTransformation A;
+	//std::cout << A.invPermutation(permutation(935)) << std::endl;
 
 	uint32_t i = 0;
 	while (!ctx.findFixedPoints(i)) {

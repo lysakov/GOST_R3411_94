@@ -23,7 +23,7 @@ uint64_t permutation(const Hash_block& block)
 	Hash_block res;
 	for (int i = 0; i < 32; ++i) {
 		short new_ind = 32 - mapping_phi(32 - i);
-		res[new_ind / 8][new_ind % 8] = block[i / 8][i % 8];
+		res[i / 8][i % 8] = block[new_ind / 8][new_ind % 8];
 	}
 
 	return res;
@@ -78,7 +78,8 @@ Hash_block Hash_block::operator^(const Hash_block &block) const noexcept
 
 Hash_block::operator uint64_t() const noexcept
 {
-	return ((uint64_t)block[0] << 48) ^ ((uint64_t)block[1] << 32) ^ ((uint64_t)block[2] << 16) ^ (uint64_t)block[3];
+	return (static_cast<uint64_t>(block[0]) << 48) ^ (static_cast<uint64_t>(block[1]) << 32) ^ 
+		(static_cast<uint64_t>(block[2]) << 16) ^ static_cast<uint64_t>(block[3]);
 }
 
 std::ostream& operator<<(std::ostream &str, const Hash_block &block)
@@ -123,14 +124,14 @@ void gost::Context::keygen(uint64_t m)
 
 	keys[0] = permutation(w);
 
-	std::cout << "key" << 0 << ": " << keys[0] << '\n';
+	//std::cout << "key" << 0 << ": " << keys[0] << '\n';
 
 	for (int i = 0; i < 3; ++i) {
-		u = (uint64_t)mapping_a(u) ^ consts[i];
+		u = static_cast<uint64_t>(mapping_a(u)) ^ consts[i];
 		v = mapping_a(mapping_a(v));
 		w = u ^ w;
 		keys[1 + i] = permutation(w);
-		std::cout << "key" << 1 + i << ": " << keys[1 + i] << '\n';
+		//std::cout << "key" << 1 + i << ": " << keys[1 + i] << '\n';
 	}
 }
 
@@ -141,7 +142,8 @@ uint64_t gost::Context::encrypt()
 	s[2] = magma::encrypt((hash_val >> 32) & 0xFFFF, keys[2]);
 	s[3] = magma::encrypt((hash_val >> 48) & 0xFFFF, keys[3]);
 
-	return (uint64_t)s[0] ^ ((uint64_t)s[1] << 16) ^ ((uint64_t)s[2] << 32) ^ ((uint64_t)s[3] << 48);
+	return static_cast<uint64_t>(s[0]) ^ (static_cast<uint64_t>(s[1]) << 16) ^ 
+		(static_cast<uint64_t>(s[2]) << 32) ^ (static_cast<uint64_t>(s[3]) << 48);
 }
 
 inline uint64_t gost::Context::mix(uint64_t y)
@@ -162,9 +164,17 @@ inline uint64_t gost::Context::mix(uint64_t y)
 
 void gost::Context::test()
 {
+	std::cout << std::hex;
 	std::cout << "A(0x1111222233334444) = " << mapping_a(0x1111222233334444) << std::endl;
 	std::cout << "P(0x1111222233334444) = " << permutation(0x1111222233334444) << std::endl;
 	std::cout << "PSI(0x1111222233334444) = " << mix(0x1111222233334444) << std::endl;
+	std::cout << static_cast<Hash_block>(0x1111222233334444) << std::endl;
+	std::cout << static_cast<Hash_block>(permutation(0x1111222233334444)) << std::endl;
+	std::cout << std::dec;
+	for (int i = 32; i > 0; --i) {
+		std::cout << mapping_phi(i) << ' ';
+	}
+	std::cout << std::endl;
 }
 
 uint64_t gost::compress(uint64_t h, uint64_t m) noexcept
