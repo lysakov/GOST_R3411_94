@@ -116,16 +116,21 @@ void gost::Context::keygen(uint64_t m)
 {
 	uint64_t consts[3] = { 0 };
 	consts[1] = 0xFF00FFFF000000FF;
+	//const char* const1[] = { "f f 0 0 f f f f", "0 0 0 0 0 0 f f", "f f 0 0 0 0 f f" "0 0 f f f f 0 0", "0 0 f f 0 0 f f", "0 0 f f 0 0 f f", "f f 0 0 f f 0 0", "f f 0 0 f f 0 0" };
 	uint64_t u = hash_val;
 	uint64_t v = m;
 	uint64_t w = u ^ v;
 
 	keys[0] = permutation(w);
+
+	std::cout << "key" << 0 << ": " << keys[0] << '\n';
+
 	for (int i = 0; i < 3; ++i) {
 		u = (uint64_t)mapping_a(u) ^ consts[i];
 		v = mapping_a(mapping_a(v));
 		w = u ^ w;
 		keys[1 + i] = permutation(w);
+		std::cout << "key" << 1 + i << ": " << keys[1 + i] << '\n';
 	}
 }
 
@@ -153,6 +158,13 @@ inline uint64_t gost::Context::mix(uint64_t y)
 	res ^= (y >> 60) & mask;
 
 	return (y >> 4) ^ (res << 60);
+}
+
+void gost::Context::test()
+{
+	std::cout << "A(0x1111222233334444) = " << mapping_a(0x1111222233334444) << std::endl;
+	std::cout << "P(0x1111222233334444) = " << permutation(0x1111222233334444) << std::endl;
+	std::cout << "PSI(0x1111222233334444) = " << mix(0x1111222233334444) << std::endl;
 }
 
 uint64_t gost::compress(uint64_t h, uint64_t m) noexcept

@@ -1,7 +1,10 @@
 #pragma once
 
 #include "gost_r3411_94.h"
-#include <unordered_set>
+#include "magma.h"
+
+#include <map>
+#include <vector>
 
 namespace attack
 {
@@ -11,12 +14,30 @@ namespace attack
 
 	public:
 		Context(uint64_t) noexcept;
-		uint64_t inv_permutation(const Hash_block&) noexcept;
+		bool checkHashVal() const noexcept;
+		bool findFixedPoints(uint16_t);
 
 	private:
-		uint64_t hash_val;
-		short inv_phi(short) noexcept;
-		inline uint64_t inv_psi(uint64_t) noexcept;
+		uint64_t hashVal;
+		std::multimap<uint16_t, uint32_t> keys;
+		std::map<uint64_t, uint64_t> birthdayAttackTable;
+	};
+
+	class LinearTransformation
+	{
+
+	public:
+		LinearTransformation() noexcept;
+		uint16_t compute1(uint32_t key) const noexcept;
+		uint16_t compute2(uint32_t key) const noexcept;
+		uint64_t invPermutation(const Hash_block&) noexcept;
+		uint16_t operatorA_(uint64_t key) noexcept;
+		short invPhi_(short) noexcept;
+
+	private:
+		uint16_t vector[64] = { 0 };
+
+		inline uint64_t invPsi_(uint64_t) noexcept;
 
 	};
 

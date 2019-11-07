@@ -34,6 +34,7 @@ namespace gost
 		Context(uint64_t = 0) noexcept;
 		uint64_t update(uint64_t);
 		inline uint64_t mix(uint64_t);
+		void test();
 
 	private:
 		uint64_t hash_val = 0;
