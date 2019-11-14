@@ -5,16 +5,6 @@
 
 int main()
 {
-	/*Block block("0 1 2 3 0 3 2 1");
-	const char* key = "12345678";*/
-	//Block block_arr[4];
-	//block_arr[0] = Block("0 3 1 2 1 1 0 2"); 
-	//block_arr[1] = Block("0 3 3 0 1 1 2 0"); 
-	//block_arr[2] = Block("0 3 1 2 1 1 0 2"); 
-	//block_arr[3] = Block("0 3 3 0 1 1 2 0");
-	//Hash_block hash_block(block_arr);
-
-	//uint64_t key = 0xdefb28e837c5cb41;
 
 	uint64_t key = 18569995496846673;
 	Block cipher_text = magma::encrypt(0, key);
@@ -22,43 +12,18 @@ int main()
 	std::cout << (uint16_t)cipher_text << std::endl;
 	std::cout << plain_text << std::endl;
 
-	//std::string msg[] = {"0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0", "0 3 1 2 1 1 0 2", "0 3 3 0 1 1 2 0"};
-	//Hash_block msg_block(msg);
 
-	//std::cout << std::hex << std::endl;
-
+	std::cout << std::hex;
 	uint64_t h = 0x1a2b3c4d5e6f7788;
 	uint64_t m = 0x1212121234343434;
 	std::cout << std::hex << gost::compress(h, m) << std::dec << std::endl;
 
 	attack::Context ctx(0);
 
-	gost::Context gostCtx(0);
-	//gostCtx.test();
-
-	//attack::LinearTransformation A;
-	//std::cout << A.invPermutation(permutation(935)) << std::endl;
-
 	uint32_t i = 0;
-	while (!ctx.findFixedPoints(i)) {
+	while (!ctx.findCollision(i)) {
 		++i;
 	}
-
-	//attack::LinearTransformation A;
-	//for (int i = 0; i < 10000; ++i) {
-	//	if (A.compute1(i) != A.operatorA_((uint64_t)i << 32)) {
-	//		std::cout << i << '\n';
-	//	}
-	//}
-
-	//std::cout << hash_block << std::endl;
-	//std::cout << permutation(hash_block) << std::endl;
-
-	/*uint64_t keys[4] = { 0 };
-	keygen(keys, 0, 2);
-	for (int i = 0; i < 4; ++i) {
-		std::cout << Hash_block(keys[i]) << std::endl;
-	}*/
 
 	return 0;
 }

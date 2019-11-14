@@ -3,26 +3,26 @@
 #include "block.h"
 #include "magma.h"
 
-class Hash_block
+class HashBlock
 {
 
 public:
-	Hash_block() noexcept;
-	Hash_block(uint64_t) noexcept;
-	Hash_block(const Block*) noexcept;
-	Hash_block(const std::string*) noexcept;
+	HashBlock() noexcept;
+	HashBlock(uint64_t) noexcept;
+	HashBlock(const Block*) noexcept;
+	HashBlock(const std::string*) noexcept;
 	Block& operator[](short) noexcept;
 	const Block& operator[](short) const noexcept;
-	Hash_block operator^(const Hash_block&) const noexcept;
+	HashBlock operator^(const HashBlock&) const noexcept;
 	operator uint64_t() const noexcept;
-	friend std::ostream& operator<<(std::ostream&, const Hash_block&);
+	friend std::ostream& operator<<(std::ostream&, const HashBlock&);
 
 private:
 	Block block[4] = { 0 };
 
 };
 
-uint64_t permutation(const Hash_block& block);
+uint64_t permutation(const HashBlock& block);
 
 namespace gost
 {
@@ -33,11 +33,11 @@ namespace gost
 	public:
 		Context(uint64_t = 0) noexcept;
 		uint64_t update(uint64_t);
-		inline uint64_t mix(uint64_t);
+		inline uint64_t psi(uint64_t);
 		void test();
 
 	private:
-		uint64_t hash_val = 0;
+		uint64_t hashVal = 0;
 		uint16_t s[4] = { 0 };
 		uint64_t keys[4] = { 0 };
 

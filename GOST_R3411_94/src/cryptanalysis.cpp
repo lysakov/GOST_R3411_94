@@ -13,14 +13,26 @@ bool attack::Context::checkHashVal() const noexcept
 	return true;
 }
 
-bool attack::Context::findFixedPoints(uint16_t d1)
+bool attack::Context::findCollision(uint16_t d1)
 {
 	std::pair<uint8_t, uint8_t> h0;
 	h0.first = (hashVal & 0xFF00) >> 8;
 	h0.second = hashVal & 0xFF;
 	uint64_t size = 0;
-	LinearTransformation A;
 
+	makeKeyTable_(d1, h0);
+
+	std::cout << "First cycle for d1 = " << d1 << " finished" << std::endl;
+
+	bool res = findFixedPoints_(d1, h0);
+	keys.clear();
+	std::cout << birthdayAttackTable.size() << '\n';
+
+	return res;
+}
+
+void attack::Context::makeKeyTable_(uint16_t d1, const std::pair<uint8_t, uint8_t>& h0)
+{
 	#pragma loop(hint_parallel(0))
 
 	for (uint32_t i = 0; i < UINT32_MAX; ++i) {
@@ -33,8 +45,6 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 			}
 			uint16_t res = magma::connect(plainText);
 
-			//++size;
-
 			keys.insert(std::make_pair(res, i));
 		}
 
@@ -43,8 +53,11 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 		}
 	}
 
-	std::cout << "First cycle for d1 = " << d1 << " finished" << std::endl;
-	//std::cout << keys.size() << '\n';
+}
+
+bool attack::Context::findFixedPoints_(uint16_t d1, const std::pair<uint8_t, uint8_t> &h0)
+{
+	#pragma loop(hint_parallel(0))
 
 	for (uint32_t i = 0; i < UINT32_MAX; ++i) {
 
@@ -53,8 +66,6 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 		}
 
 		if (A.compute2(i) == d1) {
-
-			++size;
 
 			std::pair<uint8_t, uint8_t> plainText = h0;
 
@@ -67,12 +78,10 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 			auto iter = keys.find(res);
 
 			if (iter == keys.end()) {
-				//std::cerr << "Error\n";
 				continue;
 			}
 
 			uint64_t key = (static_cast<uint64_t>(iter->second) << 32) ^ i;
-			//std::cout << key << std::endl;
 			uint64_t m = A.invPermutation(key) ^ hashVal;
 			uint64_t newHashVal = gost::compress(hashVal, m);
 
@@ -86,20 +95,14 @@ bool attack::Context::findFixedPoints(uint16_t d1)
 
 			birthdayAttackTable[newHashVal] = m;
 		}
-
 	}
-
-	//std::cout << size << '\n';
-	//std::cout << keys.size() << '\n';
-	keys.clear();
-	std::cout << birthdayAttackTable.size() << '\n';
 
 	return false;
 }
 
-uint64_t attack::LinearTransformation::invPermutation(const Hash_block &y) noexcept
+uint64_t attack::LinearTransformation::invPermutation(const HashBlock &y) noexcept
 {
-	Hash_block res;
+	HashBlock res;
 
 	for (int i = 0; i < 32; ++i) {
 		short newInd = 32 - invPhi_(32 - i);
@@ -128,11 +131,8 @@ uint16_t attack::LinearTransformation::operatorA_(uint64_t key) noexcept
 {
 	uint64_t tmp = invPermutation(key);
 
-	//std::cout << "InvPerm: " << (Hash_block)tmp << '\n';
-
 	for (int i = 0; i < 12; ++i) {
 		tmp = invPsi_(tmp);
-		//std::cout << "InvPsi" << i << ": " << (Hash_block)tmp << '\n';
 	}
 
 	return tmp & 0xFFFF;
