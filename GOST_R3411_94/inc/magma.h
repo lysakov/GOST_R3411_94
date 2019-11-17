@@ -16,7 +16,7 @@ namespace magma
 	private:
 		uint8_t key_set[32] = { 0 };
 
-		void keygen(const uint8_t*) noexcept;
+		void keygen_(const uint8_t*) noexcept;
 
 	};
 

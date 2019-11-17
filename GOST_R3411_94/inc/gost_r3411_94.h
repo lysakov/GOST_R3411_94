@@ -22,8 +22,6 @@ private:
 
 };
 
-uint64_t permutation(const HashBlock& block);
-
 namespace gost
 {
 
@@ -33,7 +31,6 @@ namespace gost
 	public:
 		Context(uint64_t = 0) noexcept;
 		uint64_t update(uint64_t);
-		inline uint64_t psi(uint64_t);
 		void test();
 
 	private:
@@ -41,8 +38,10 @@ namespace gost
 		uint16_t s[4] = { 0 };
 		uint64_t keys[4] = { 0 };
 
-		void keygen(uint64_t);
-		uint64_t encrypt();
+		void keygen_(uint64_t);
+		uint64_t encrypt_();
+		uint64_t permutation_(const HashBlock& block);
+		inline uint64_t psi_(uint64_t);
 
 	};
 

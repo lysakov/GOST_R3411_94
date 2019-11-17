@@ -26,7 +26,9 @@ bool attack::Context::findCollision(uint16_t d1)
 
 	bool res = findFixedPoints_(d1, h0);
 	keys.clear();
-	std::cout << birthdayAttackTable.size() << '\n';
+
+	std::cout << "Second cycle for d1 = " << d1 << " finished" << std::endl;
+	std::cout << "Fixed points found: " << birthdayAttackTable.size() << '\n';
 
 	return res;
 }
@@ -48,9 +50,9 @@ void attack::Context::makeKeyTable_(uint16_t d1, const std::pair<uint8_t, uint8_
 			keys.insert(std::make_pair(res, i));
 		}
 
-		if (!(i % 100000000)) {
-			std::cout << i << '\n';
-		}
+		//if (!(i % 100000000)) {
+		//	std::cout << i << '\n';
+		//}
 	}
 
 }
@@ -61,9 +63,9 @@ bool attack::Context::findFixedPoints_(uint16_t d1, const std::pair<uint8_t, uin
 
 	for (uint32_t i = 0; i < UINT32_MAX; ++i) {
 
-		if (!(i % 100000000)) {
-			std::cout << i << '\n';
-		}
+		//if (!(i % 100000000)) {
+		//	std::cout << i << '\n';
+		//}
 
 		if (A.compute2(i) == d1) {
 

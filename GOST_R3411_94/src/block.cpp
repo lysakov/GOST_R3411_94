@@ -46,9 +46,9 @@ Ref Block::operator[](short i) noexcept
 	return Ref(this, i);
 }
 
-Const_ref Block::operator[](short pos) const noexcept
+ConstRef Block::operator[](short pos) const noexcept
 {
-	return Const_ref(this, pos);
+	return ConstRef(this, pos);
 }
 
 bool Block::operator==(const Block& block) const noexcept
@@ -128,11 +128,11 @@ Ref::operator short() const noexcept
 	return (block->val >> 2 * (Block::BLOCK_SIZE - pos - 1)) & 0b11;
 }
 
-Const_ref::Const_ref(const Block* block, short pos) noexcept : block(block), pos(pos)
+ConstRef::ConstRef(const Block* block, short pos) noexcept : block(block), pos(pos)
 {
 }
 
-Const_ref::operator short() const noexcept
+ConstRef::operator short() const noexcept
 {
 	return (block->val >> 2 * (Block::BLOCK_SIZE - pos - 1)) & 0b11;
 }

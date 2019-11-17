@@ -19,11 +19,11 @@ private:
 
 };
 
-class Const_ref
+class ConstRef
 {
 
 public:
-	Const_ref(const Block*, short) noexcept;
+	ConstRef(const Block*, short) noexcept;
 	operator short() const noexcept;
 
 private:
@@ -42,7 +42,7 @@ public:
 	Block(const std::string&, size_t* = nullptr);
 	Block(uint16_t = 0) noexcept;
 	Ref operator[] (short) noexcept;
-	Const_ref operator[] (short) const noexcept;
+	ConstRef operator[] (short) const noexcept;
 	bool operator== (const Block&) const noexcept;
 	bool operator> (const Block&) const noexcept;
 	bool operator< (const Block&) const noexcept; 
@@ -55,7 +55,7 @@ public:
 	friend std::ostream& operator<< (std::ostream&, const Block&);
 	friend short Ref::operator= (short) noexcept;
 	friend Ref::operator short() const noexcept;
-	friend Const_ref::operator short() const noexcept;
+	friend ConstRef::operator short() const noexcept;
 	
 
 private:

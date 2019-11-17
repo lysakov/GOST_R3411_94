@@ -43,6 +43,7 @@ namespace attack
 
 		void makeKeyTable_(uint16_t, const std::pair<uint8_t, uint8_t>&);
 		bool findFixedPoints_(uint16_t, const std::pair<uint8_t, uint8_t>&);
+
 	};
 
 }

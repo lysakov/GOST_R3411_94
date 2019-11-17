@@ -2,7 +2,7 @@
 
 magma::Context::Context(const uint8_t *key) noexcept
 {
-	keygen(key);
+	keygen_(key);
 }
 
 uint16_t magma::Context::encrypt(uint16_t plain_text) const noexcept
@@ -71,7 +71,7 @@ uint16_t magma::connect(std::pair<uint8_t, uint8_t> &pair) noexcept
 	return res;
 }
 
-void magma::Context::keygen(const uint8_t *key) noexcept
+void magma::Context::keygen_(const uint8_t *key) noexcept
 {
 	for (int i = 0; i < 8; ++i) {
 		key_set[i] = key[i];

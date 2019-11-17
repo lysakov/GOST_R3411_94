@@ -14,16 +14,6 @@ static short mappingPhi(short x)
 	return 8 * i + k;
 }
 
-uint64_t permutation(const HashBlock& block)
-{
-	HashBlock res;
-	for (int i = 0; i < 32; ++i) {
-		short newInd = 32 - mappingPhi(32 - i);
-		res[i / 8][i % 8] = block[newInd / 8][newInd % 8];
-	}
-
-	return res;
-}
 
 HashBlock::HashBlock() noexcept
 {
@@ -93,23 +83,24 @@ gost::Context::Context(uint64_t iv) noexcept : hashVal(iv)
 
 uint64_t gost::Context::update(uint64_t m)
 {
-	keygen(m);
+	keygen_(m);
 
-	uint64_t s = encrypt();
+	uint64_t s = encrypt_();
+
 	for (int i = 0; i < 12; ++i) {
-		s = psi(s);
+		s = psi_(s);
 	}
 
-	uint64_t res = hashVal ^ psi(m ^ s);
+	uint64_t res = hashVal ^ psi_(m ^ s);
 
 	for (int i = 0; i < 61; ++i) {
-		res = psi(res);
+		res = psi_(res);
 	}
 
 	return res;
 }
 
-void gost::Context::keygen(uint64_t m)
+void gost::Context::keygen_(uint64_t m)
 {
 	uint64_t consts[3] = { 0 };
 	consts[1] = 0xFF00FFFF000000FF;
@@ -117,17 +108,17 @@ void gost::Context::keygen(uint64_t m)
 	uint64_t v = m;
 	uint64_t w = u ^ v;
 
-	keys[0] = permutation(w);
+	keys[0] = permutation_(w);
 
 	for (int i = 0; i < 3; ++i) {
 		u = static_cast<uint64_t>(mappingA(u)) ^ consts[i];
 		v = mappingA(mappingA(v));
 		w = u ^ v;
-		keys[1 + i] = permutation(w);
+		keys[1 + i] = permutation_(w);
 	}
 }
 
-uint64_t gost::Context::encrypt()
+uint64_t gost::Context::encrypt_()
 {
 	s[0] = magma::encrypt(hashVal & 0xFFFF, keys[0]);
 	s[1] = magma::encrypt((hashVal >> 16) & 0xFFFF, keys[1]);
@@ -138,7 +129,18 @@ uint64_t gost::Context::encrypt()
 		(static_cast<uint64_t>(s[2]) << 32) ^ (static_cast<uint64_t>(s[3]) << 48);
 }
 
-inline uint64_t gost::Context::psi(uint64_t y)
+uint64_t gost::Context::permutation_(const HashBlock& block)
+{
+	HashBlock res;
+	for (int i = 0; i < 32; ++i) {
+		short newInd = 32 - mappingPhi(32 - i);
+		res[i / 8][i % 8] = block[newInd / 8][newInd % 8];
+	}
+
+	return res;
+}
+
+inline uint64_t gost::Context::psi_(uint64_t y)
 {
 	uint64_t mask = 0xF;
 	uint64_t res = 0;
@@ -158,10 +160,10 @@ void gost::Context::test()
 {
 	std::cout << std::hex;
 	std::cout << "A(0x1111222233334444) = " << mappingA(0x1111222233334444) << std::endl;
-	std::cout << "P(0x1111222233334444) = " << permutation(0x1111222233334444) << std::endl;
-	std::cout << "PSI(0x1111222233334444) = " << psi(0x1111222233334444) << std::endl;
+	std::cout << "P(0x1111222233334444) = " << permutation_(0x1111222233334444) << std::endl;
+	std::cout << "PSI(0x1111222233334444) = " << psi_(0x1111222233334444) << std::endl;
 	std::cout << static_cast<HashBlock>(0x1111222233334444) << std::endl;
-	std::cout << static_cast<HashBlock>(permutation(0x1111222233334444)) << std::endl;
+	std::cout << static_cast<HashBlock>(permutation_(0x1111222233334444)) << std::endl;
 	std::cout << std::dec;
 	for (int i = 32; i > 0; --i) {
 		std::cout << mappingPhi(i) << ' ';
